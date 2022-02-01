@@ -6,11 +6,12 @@ jobs:
 
       - run: 
           command: docker run --rm -v $(pwd):/data -t ghcr.io/terraform-linters/tflint aws -f json | tee tflint-output.json
-          when: on_fail
+          when: on_fail             # Even if the job fails, continue to the next stages
 
       - store_artifacts:
           path: tflint-output.json
           destination: tflint-artifact
+          when: always
 
   test:
     machine: true
@@ -40,7 +41,7 @@ workflows:
       - tflint
       - test:
           requires:
-            - tflint 
+            - tflint
       - integration:
           requires:
             - test
