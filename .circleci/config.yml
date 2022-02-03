@@ -1,4 +1,17 @@
 jobs:
+
+  terrascan:
+    machine: true
+    steps:
+      - checkout
+
+      - run: docker run --rm -v $(pwd):/src accurics/terrascan scan -t aws -d /src/aws -o json | tee terrascan-output.json
+        when: on_fail
+
+      - store_artifacts:
+          path: terrascan-output.json
+          destination: terrascan-artifact
+          when: always
   
   checkov:
     machine: true
@@ -12,6 +25,7 @@ jobs:
       - store_artifacts:
           path: checkov-output.json
           destination: checkov-artifact
+          when: always
   
   
   tflint:
@@ -53,7 +67,10 @@ workflows:
   version: 2
   terraform:
     jobs:
+      - terrascan
       - checkov
+           requires:
+            - terrascan
       - tflint
           requires:
             - checkov
